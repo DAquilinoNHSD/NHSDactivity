@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Innovation Challenge - Facilitator's Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Warm Neutrals: stone, amber; Complements: sky, teal) -->
+    <!-- Application Structure Plan: A single-page dashboard designed for the event facilitator, updated with new content. The structure retains the effective sticky navigation for quick access to key sections (Overview, The Challenge, Phases, Resources). The core change is in the 'Resources' section, which is now an actionable launchpad with direct, clickable links to the specified AI tools. The interactive accordion for the 'Phases' remains, as it's ideal for guiding a facilitator through a timed event without overwhelming them. The Chart.js visualization provides an instant summary of time allocation. This structure is superior to a static document for managing a live, interactive workshop. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Total time for each phase. -> Goal: Compare time commitment. -> Viz: Horizontal Bar Chart. -> Interaction: Tooltip on hover. -> Justification: Provides a quick, at-a-glance understanding of the event's pacing. -> Library: Chart.js.
+        - Report Info: Departmental brainstorming prompts. -> Goal: Organize prompts by team. -> Presentation: Styled cards within an accordion. -> Interaction: Click to reveal. -> Justification: Separates information into scannable blocks, making it easy to call out specific prompts. -> Method: HTML/Tailwind.
+        - Report Info: AI tool links. -> Goal: Provide direct access. -> Presentation: Clickable, styled buttons grouped by category. -> Interaction: Click to open tool in a new tab. -> Justification: Transforms the guide from informational to a functional launchpad for the activity. -> Method: HTML/Tailwind.
+        - Report Info: Step-by-step activity flow. -> Goal: Guide the facilitator sequentially. -> Presentation: Collapsible accordions for each phase. -> Interaction: Click to expand/collapse. -> Justification: Mirrors the event's chronological flow while keeping the UI clean and focused on the current stage. -> Method: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-200 */
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .tab-active {
+            background-color: #0d9488; /* teal-600 */
+            color: #ffffff;
+        }
+        .tab-inactive {
+            background-color: #f0f9ff; /* sky-50 */
+            color: #0369a1; /* sky-800 */
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .accordion-button.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+        .resource-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .resource-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl md:text-2xl font-bold text-teal-700">AI Innovation Challenge</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="text-stone-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">Overview</a>
+                        <a href="#challenge" class="text-stone-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">The Challenge</a>
+                        <a href="#phases" class="text-stone-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">The Activity</a>
+                        <a href="#resources" class="text-stone-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium">Resources</a>
+                    </div>
+                </div>
+                 <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-stone-500 hover:text-teal-600 hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#overview" class="text-stone-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">Overview</a>
+                <a href="#challenge" class="text-stone-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">The Challenge</a>
+                <a href="#phases" class="text-stone-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">The Activity</a>
+                <a href="#resources" class="text-stone-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium">Resources</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="overview" class="scroll-mt-20 mb-16">
+            <div class="text-center bg-white p-8 rounded-2xl shadow-lg border border-stone-200">
+                <h2 class="text-3xl font-bold tracking-tight text-teal-700 sm:text-4xl">NHSD: The Future-Ready School District</h2>
+                <p class="mt-4 text-lg leading-8 text-stone-600 max-w-3xl mx-auto">This interactive guide outlines the "AI Innovation Challenge." The premise: it's 2035, and a one-time grant has been awarded. Each department must develop a compelling, AI-driven proposal to transform a key area of their work. <strong class="text-amber-700">The catch… the funds are only allocated to a single initiative</strong> - the team that can best demonstrate their vision will win the grant!</p>
+            </div>
+            <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
+                <div class="bg-sky-50 p-6 rounded-xl border border-sky-200">
+                    <h3 class="font-semibold text-sky-800">Engage with AI</h3>
+                    <p class="mt-2 text-sm text-sky-700">Provide hands-on experience with diverse AI tools for text, image, and more.</p>
+                </div>
+                <div class="bg-sky-50 p-6 rounded-xl border border-sky-200">
+                    <h3 class="font-semibold text-sky-800">Foster Collaboration</h3>
+                    <p class="mt-2 text-sm text-sky-700">Encourage communication and teamwork between district departments.</p>
+                </div>
+                <div class="bg-sky-50 p-6 rounded-xl border border-sky-200">
+                    <h3 class="font-semibold text-sky-800">Spark Innovation</h3>
+                    <p class="mt-2 text-sm text-sky-700">Inspire new ideas for applying AI productively in education.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="challenge" class="scroll-mt-20 mb-16">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold tracking-tight text-stone-800">The Challenge & The Teams</h2>
+                <p class="mt-2 text-lg text-stone-600 max-w-2xl mx-auto">The core task is to develop a compelling 5-minute pitch for an AI-driven proposal. Participants will work in their departmental teams to identify a problem and design an innovative solution.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200"><h3 class="font-semibold text-teal-700">Operations</h3></div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200"><h3 class="font-semibold text-teal-700">Human Resources</h3></div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200"><h3 class="font-semibold text-teal-700">Special Education</h3></div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200"><h3 class="font-semibold text-teal-700">Finance</h3></div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200"><h3 class="font-semibold text-teal-700">Education</h3></div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200"><h3 class="font-semibold text-teal-700">School Leadership (Principals)</h3></div>
+            </div>
+        </section>
+
+        <section id="phases" class="scroll-mt-20 mb-16">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold tracking-tight text-stone-800">Activity Phases & Timeline</h2>
+                <p class="mt-2 text-lg text-stone-600 max-w-3xl mx-auto">The challenge unfolds in three distinct phases. The chart below visualizes the time commitment for each part of the activity, helping you manage the flow of the day. Click on each phase to expand and see the detailed steps.</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-stone-200 mb-10">
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-white rounded-xl shadow-md border border-stone-200">
+                    <button class="accordion-button w-full flex justify-between items-center p-5 text-left font-semibold text-lg text-teal-800 hover:bg-stone-50 rounded-xl">
+                        <span>Phase 1: Introduction & Brainstorm (60 mins)</span>
+                        <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-5 border-t border-stone-200">
+                            <div class="mb-6">
+                                <h4 class="font-bold text-md text-stone-700">1. Welcome & Overview (15 mins)</h4>
+                                <ul class="list-disc list-inside mt-2 text-stone-600 space-y-1">
+                                    <li>Explain the "Future-Ready School District" premise and goals.</li>
+                                    <li>Introduce the available AI tools and emphasize exploration over expertise.</li>
+                                    <li>Divide participants into their departmental teams.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-md text-stone-700">2. Departmental Brainstorm (45 mins)</h4>
+                                <p class="mt-2 text-stone-600">Teams identify a core challenge or opportunity. Use the prompts below to guide their thinking. They should define the problem, their AI vision, and the potential impact.</p>
+                                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg"><p class="text-sm text-amber-800"><strong>Operations:</strong> How can AI optimize maintenance, security, or transport?</p></div>
+                                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg"><p class="text-sm text-amber-800"><strong>Human Resources:</strong> How can AI revolutionize recruitment or professional development?</p></div>
+                                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg"><p class="text-sm text-amber-800"><strong>Special Education:</strong> How can AI personalize learning for diverse needs or streamline IEPs?</p></div>
+                                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg"><p class="text-sm text-amber-800"><strong>Finance:</strong> How can AI enhance budget allocation or grant management?</p></div>
+                                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg"><p class="text-sm text-amber-800"><strong>Education:</strong> How can AI personalize learning paths or automate teacher tasks?</p></div>
+                                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg"><p class="text-sm text-amber-800"><strong>School Leadership:</strong> How can AI support school-wide decisions or parent communication?</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md border border-stone-200">
+                    <button class="accordion-button w-full flex justify-between items-center p-5 text-left font-semibold text-lg text-teal-800 hover:bg-stone-50 rounded-xl">
+                        <span>Phase 2: AI Solution Design & Prototype (120 mins)</span>
+                        <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-5 border-t border-stone-200">
+                            <div class="mb-6">
+                                <h4 class="font-bold text-md text-stone-700">1. Deep Dive & Solution Design (90 mins)</h4>
+                                <p class="mt-2 text-stone-600 mb-4">Teams use the AI tools to build out their proposal. Guide them through the different tool types using the tabs below to see specific tasks for each category.</p>
+                                <div>
+                                    <div class="mb-4 flex flex-wrap border-b border-gray-200">
+                                        <button class="ai-tool-tab flex-auto md:flex-initial py-2 px-4 text-center font-medium rounded-t-lg" data-target="text-ai">Text AI</button>
+                                        <button class="ai-tool-tab flex-auto md:flex-initial py-2 px-4 text-center font-medium rounded-t-lg" data-target="image-ai">Image AI</button>
+                                        <button class="ai-tool-tab flex-auto md:flex-initial py-2 px-4 text-center font-medium rounded-t-lg" data-target="video-ai">Video AI</button>
+                                        <button class="ai-tool-tab flex-auto md:flex-initial py-2 px-4 text-center font-medium rounded-t-lg" data-target="music-ai">Music AI</button>
+                                    </div>
+                                    <div id="ai-tool-content" class="p-4 bg-sky-50 rounded-b-lg border border-sky-200">
+                                        <div id="text-ai" class="ai-tool-panel">
+                                            <ul class="list-disc list-inside text-sky-800 space-y-1">
+                                                <li>Refine problem statement and solution.</li>
+                                                <li>Draft a short summary or elevator pitch.</li>
+                                                <li>Write a hypothetical press release.</li>
+                                                <li>Generate a short script for a promotional video.</li>
+                                            </ul>
+                                        </div>
+                                        <div id="image-ai" class="ai-tool-panel hidden">
+                                            <ul class="list-disc list-inside text-sky-800 space-y-1">
+                                                <li>Create a hypothetical user interface (UI) for the tool.</li>
+                                                <li>Generate a "before and after" visual comparison.</li>
+                                                <li>Design a promotional graphic for the program.</li>
+                                                <li>Imagine a futuristic school environment enhanced by the AI.</li>
+                                            </ul>
+                                        </div>
+                                        <div id="video-ai" class="ai-tool-panel hidden">
+                                             <ul class="list-disc list-inside text-sky-800 space-y-1">
+                                                <li>Create a short explainer video from your script.</li>
+                                                <li>(Simpler alternative) Use presentation software with text-to-speech to animate slides and images.</li>
+                                            </ul>
+                                        </div>
+                                        <div id="music-ai" class="ai-tool-panel hidden">
+                                            <ul class="list-disc list-inside text-sky-800 space-y-1">
+                                                <li>Generate inspiring background music for the presentation.</li>
+                                                <li>Create a hypothetical jingle for the AI program.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-md text-stone-700">2. Presentation Preparation (30 mins)</h4>
+                                <p class="mt-2 text-stone-600">Teams assemble all their AI-generated assets into a creative and cohesive 5-minute pitch to sell their innovation to the "District Board."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md border border-stone-200">
+                    <button class="accordion-button w-full flex justify-between items-center p-5 text-left font-semibold text-lg text-teal-800 hover:bg-stone-50 rounded-xl">
+                        <span>Phase 3: Presentations & Reflection (60-75 mins)</span>
+                        <span class="accordion-arrow transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="p-5 border-t border-stone-200">
+                            <div class="mb-6">
+                                <h4 class="font-bold text-md text-stone-700">1. Departmental Pitches (45-60 mins)</h4>
+                                <p class="mt-2 text-stone-600">Each team presents their 5-7 minute pitch. Encourage constructive feedback and questions from the audience (the "District Board").</p>
+                            </div>
+                             <div class="mb-6">
+                                <h4 class="font-bold text-md text-stone-700">2. Group Reflection & Discussion (15 mins)</h4>
+                                <p class="mt-2 text-stone-600 mb-3">After all presentations, lead a group discussion using the following questions:</p>
+                                <ul class="list-decimal list-inside text-stone-600 space-y-2">
+                                    <li>What was the most surprising thing you learned or created with AI today?</li>
+                                    <li>How did using these tools challenge your preconceptions about AI?</li>
+                                    <li>Where do you see the most immediate and impactful applications of AI in your role?</li>
+                                    <li>What ethical considerations must we be mindful of?</li>
+                                    <li>What's one actionable step you might take to explore AI further?</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-md text-stone-700">3. Awards/Recognition (Optional)</h4>
+                                <p class="mt-2 text-stone-600">Give out fun awards based on categories like: Most Innovative, Best Use of AI, Most Impactful Vision, or Most Entertaining Presentation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="resources" class="scroll-mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold tracking-tight text-stone-800">AI Tool Launchpad</h2>
+                 <p class="mt-2 text-lg text-stone-600 max-w-3xl mx-auto">Use these direct links to access the suggested AI tools for the challenge. Each link will open in a new tab.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-teal-700">Text AI Tools</h3>
+                    <div class="space-y-3">
+                        <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>ChatGPT</span><span>→</span></a>
+                        <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>Google Gemini</span><span>→</span></a>
+                    </div>
+                </div>
+                 <div>
+                    <h3 class="text-xl font-semibold mb-4 text-teal-700">Image AI Tools</h3>
+                    <div class="space-y-3">
+                        <a href="https://openai.com/index/dall-e-3/" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>DALL-E 3</span><span>→</span></a>
+                        <a href="https://deepmind.google/models/veo/" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>Google Veo</span><span>→</span></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-teal-700">Video AI Tools</h3>
+                    <div class="space-y-3">
+                        <a href="https://web.descript.com/" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>Descript</span><span>→</span></a>
+                        <a href="https://runwayml.com/" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>RunwayML</span><span>→</span></a>
+                        <a href="https://labs.google/fx/tools/whisk" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>Google Whisk</span><span>→</span></a>
+                    </div>
+                </div>
+                 <div>
+                    <h3 class="text-xl font-semibold mb-4 text-teal-700">Music AI Tools</h3>
+                    <div class="space-y-3">
+                        <a href="https://www.aiva.ai/" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>AIVA</span><span>→</span></a>
+                        <a href="https://soundraw.io/generate_music" target="_blank" rel="noopener noreferrer" class="resource-link flex items-center justify-between bg-white p-4 rounded-lg shadow border border-stone-200 w-full"><span>Soundraw</span><span>→</span></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-800 mt-16">
+        <div class="container mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-stone-400 text-sm">
+            <p>AI Innovation Challenge Facilitator's Guide | Summer Retreat</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('#mobile-menu a, header a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (!mobileMenu.classList.contains('hidden')) {
+                       mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    button.classList.toggle('open');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        // A slight delay to ensure other accordions start closing before opening the new one
+                        setTimeout(() => {
+                           content.style.maxHeight = content.scrollHeight + "px";
+                        }, 50);
+                    }
+                    
+                    // Optional: Close other accordions
+                    accordionButtons.forEach(otherButton => {
+                        if (otherButton !== button) {
+                            otherButton.classList.remove('open');
+                            otherButton.nextElementSibling.style.maxHeight = null;
+                        }
+                    });
+                });
+            });
+
+            const tabs = document.querySelectorAll('.ai-tool-tab');
+            const panels = document.querySelectorAll('.ai-tool-panel');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    
+                    tab.classList.remove('tab-inactive');
+                    tab.classList.add('tab-active');
+
+                    const target = tab.getAttribute('data-target');
+                    panels.forEach(panel => {
+                        if (panel.id === target) {
+                            panel.classList.remove('hidden');
+                        } else {
+                            panel.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+            tabs[0].click();
+
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            const timelineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Phase 1: Brainstorm', 'Phase 2: Design', 'Phase 3: Present'],
+                    datasets: [{
+                        label: 'Duration (Minutes)',
+                        data: [60, 120, 75],
+                        backgroundColor: [
+                            'rgba(56, 189, 248, 0.6)', // sky-400
+                            'rgba(13, 148, 136, 0.6)', // teal-600
+                            'rgba(251, 191, 36, 0.6)'  // amber-400
+                        ],
+                        borderColor: [
+                            'rgba(56, 189, 248, 1)',
+                            'rgba(13, 148, 136, 1)',
+                            'rgba(251, 191, 36, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Activity Time Allocation',
+                            font: {
+                                size: 18,
+                                family: 'Inter'
+                            },
+                            color: '#44403c' // stone-700
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Duration: ${context.raw} minutes`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Minutes',
+                                color: '#57534e' // stone-600
+                            }
+                        },
+                        y: {
+                             ticks: {
+                                color: '#57534e' // stone-600
+                             }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
